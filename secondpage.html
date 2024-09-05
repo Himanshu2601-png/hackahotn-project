@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Photo Upload and Capture</title>
+    <style>
+        body{
+            background-image: url('bgimage.jpg');
+        }
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5; /* Light grey background color */
+            color: white; /* Dark text for contrast */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            text-shadow: 
+                1px 1px 0 #000,   /* Horizontal and vertical shadow offset, blur radius, color */
+                -1px -1px 0 #000,
+                1px -1px 0 #000,
+                -1px 1px 0 #000;
+        }
+        .container {
+            text-align: center;
+            background-color: #926ad4; /* White background for the container */
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        #camera {
+            display: none;
+        }
+        #photo {
+            border: 1px solid #ddd;
+            margin-top: 10px;
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+        }
+        #controls {
+            margin-top: 10px;
+        }
+        button {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Skincare Photo Upload and Capture</h1>
+        <p>Select a photo from your files or take a new one with your camera.</p>
+
+        <div id="controls">
+            <!-- File input for photo upload -->
+            <input type="file" id="fileInput" accept="image/*">
+
+            <!-- Button to start camera -->
+            <button id="startCamera">Open Camera</button>
+            <button id="takePhoto" style="display:none;">Take Photo</button>
+
+            <!-- Video element for camera feed -->
+            <video id="camera" autoplay></video>
+            <!-- Canvas for capturing photo -->
+            <canvas id="canvas" style="display: none;"></canvas>
+        </div>
+
+        <!-- Display the captured or uploaded photo -->
+        <img id="photo" alt="Your photo will appear here">
+    </div>
+
+    <script>
+        const fileInput = document.getElementById('fileInput');
+        const startCameraButton = document.getElementById('startCamera');
+        const takePhotoButton = document.getElementById('takePhoto');
+        const video = document.getElementById('camera');
+        const canvas = document.getElementById('canvas');
+        const photo = document.getElementById('photo');
+        const context = canvas.getContext('2d');
+
+        // Function to start the camera
+        async function startCamera() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                video.srcObject = stream;
+                video.style.display = 'block';
+                takePhotoButton.style.display = 'inline';
+                startCameraButton.style.display = 'none';
+            } catch (err) {
+                console.error('Error accessing the camera: ', err);
+            }
+        }
+
+        // Function to capture photo from camera
+        function takePhoto() {
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            const dataURL = canvas.toDataURL('image/png');
+            photo.src = dataURL;
+            photo.style.display = 'block';
+            video.style.display = 'none';
+            takePhotoButton.style.display = 'none';
+            startCameraButton.style.display = 'inline';
+        }
+
+        // Event listener for file input
+        fileInput.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    photo.src = e.target.result;
+                    photo.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Event listener for take photo button
+        takePhotoButton.addEventListener('click', takePhoto);
+
+        // Event listener to open camera
+        startCameraButton.addEventListener('click', startCamera);
+    </script>
+</body>
+</html>
